@@ -1,0 +1,73 @@
+name: E2E - Cypress (Web + Chatbot)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  cypress:
+    runs-on: ubuntu-latest
+
+    env:
+      # Pasa tus variables de entorno a Cypress (se leerán como CYPRESS_*)
+      CYPRESS_ORANGEHRM_USER: ${{ secrets.ORANGEHRM_USER }}
+      CYPRESS_ORANGEHRM_PASS: ${{ secrets.ORANGEHRM_PASS }}
+      CYPRESS_CHATBOT_URL:    ${{ secrets.CHATBOT_URL }} # o fija aquí https://estrellablanca.com.mx/
+      # Suaviza flakiness en CI
+      CYPRESS_retries: 2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      # (Opcional) si usas Cypress Cloud, descomenta y añade secret CYPRESS_RECORD_KEY
+      # - name: Verify Cypress
+      #   run: npx cypress verify
+
+      - name: Run Cypress (Chrome, web + chatbot)
+        uses: cypress-io/github-action@v6
+        with:
+          install: false      # ya hicimos `npm ci`
+          browser: chrome
+          command: >
+            npx cypress run
+            --browser chrome
+            --reporter junit
+            --reporter-options "mochaFile=reports/junit/results-[hash].xml,toConsole=true"
+            --spec "cypress/e2e/orangehrm/**/*.cy.js,cypress/e2e/chatbot/**/*.cy.js"
+
+      - name: Publica reporte JUnit en el job
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Cypress JUnit
+          path: reports/junit/**/*.xml
+          reporter: java-junit
+          fail-on-empty: false
+
+      - name: Subir videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-videos
+          path: cypress/videos
+          if-no-files-found: ignore
+
+      - name: Subir screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+          if-no-files-found: ignore

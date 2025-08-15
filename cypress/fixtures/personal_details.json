@@ -1,0 +1,12 @@
+{
+  "first": "QA",
+  "middle": "Auto",
+  "last": "Tester",
+  "otherId": "OID-12345",
+  "driversLicense": "DL-987654",
+  "licenseExpiry": "2030-12-31",
+  "nationality": "Indian",
+  "maritalStatus": "Single",
+  "birthDate": "1999-05-15",
+  "gender": "Male"
+}
