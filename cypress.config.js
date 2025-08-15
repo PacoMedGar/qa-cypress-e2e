@@ -1,18 +1,30 @@
 const { defineConfig } = require('cypress');
 
 module.exports = defineConfig({
+  reporter: 'junit',
+  reporterOptions: {
+    mochaFile: 'reports/junit/results-[hash].xml',
+    toConsole: true,
+  },
+
   e2e: {
-    baseUrl: 'https://estrellablanca.com.mx',
+    baseUrl: 'https://opensource-demo.orangehrmlive.com',
     supportFile: 'cypress/support/e2e.js',
-    chromeWebSecurity: false,                 // permite iframes de 3ros
-    experimentalSessionAndOrigin: true,       // habilita cy.origin
+    chromeWebSecurity: false,
     viewportWidth: 1366,
     viewportHeight: 900,
-    setupNodeEvents(on, config) { return config; }
+    setupNodeEvents(on, config) {
+      return config;
+    },
   },
+
   env: {
-    CHATBOT_URL: 'https://estrellablanca.com.mx/'
+    ORANGEHRM_USER: 'Admin',
+    ORANGEHRM_PASS: 'admin123',
+    CHATBOT_URL: 'https://estrellablanca.com.mx/',
   },
+
+  downloadsFolder: 'cypress/downloads',
   defaultCommandTimeout: 12000,
-  pageLoadTimeout: 60000
+  pageLoadTimeout: 60000,
 });
