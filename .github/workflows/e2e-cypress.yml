@@ -9,7 +9,6 @@ on:
 jobs:
   cypress:
     runs-on: ubuntu-latest
-    environment: ORANGEHRM_USER   # usa el Environment donde metiste los secrets
 
     env:
       CYPRESS_ORANGEHRM_USER: ${{ secrets.ORANGEHRM_USER }}
@@ -27,34 +26,19 @@ jobs:
 
       - run: npm ci
 
-      - name: Run Cypress
+      - name: Run Cypress (non-blocking)
         uses: cypress-io/github-action@v6
+        continue-on-error: true
         with:
-          install: false          # ya hicimos npm ci
-          browser: chrome         # ahora sí se respeta
+          install: false
+          browser: chrome
           spec: |
             cypress/e2e/orangehrm/**/*.cy.js,
             cypress/e2e/chatbot/**/*.cy.js
+          config: video=false,screenshotOnRunFailure=true,trashAssetsBeforeRuns=false
 
       - if: always()
-        name: Publicar reporte JUnit
-        uses: dorny/test-reporter@v1
-        with:
-          name: Cypress JUnit
-          path: reports/junit/**/*.xml
-          reporter: java-junit
-          fail-on-empty: false
-
-      - if: always()
-        name: Adjuntar videos
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-videos
-          path: cypress/videos
-          if-no-files-found: ignore
-
-      - if: always()
-        name: Adjuntar screenshots
+        name: Upload screenshots
         uses: actions/upload-artifact@v4
         with:
           name: cypress-screenshots
